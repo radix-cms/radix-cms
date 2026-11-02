@@ -1,0 +1,86 @@
+@page "/admin"
+@model dotnet_server.Pages.Admin.IndexModel
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Dashboard | Radix CMS";
+    var username = User.Identity?.Name ?? "Admin";
+    var role = User.FindFirstValue(ClaimTypes.Role) ?? "User";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/css/admin.css" />
+</head>
+<body class="admin-page">
+    <aside class="admin-sidebar">
+        <div class="brand">Radix<span>CMS</span></div>
+        <nav aria-label="Admin navigation">
+            <ul class="admin-nav">
+                <li class="active"><a href="/admin"><span class="icon" aria-hidden="true">▦</span>Dashboard</a></li>
+                <li><span><span class="icon" aria-hidden="true">↻</span>Updates</span></li>
+                <li><a href="/admin/pages"><span class="icon" aria-hidden="true">▤</span>Pages</a></li>
+                <li><a href="/admin/themes"><span class="icon" aria-hidden="true">◈</span>Themes</a></li>
+                <li><a href="/admin/media"><span class="icon" aria-hidden="true">▧</span>Media Library</a></li>
+                <li><a href="/admin/users"><span class="icon" aria-hidden="true">♙</span>Users &amp; Roles</a></li>
+                <li><a href="/admin/settings"><span class="icon" aria-hidden="true">⚙</span>Settings</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <div class="admin-wrapper">
+        <header class="admin-header">
+            <a class="view-site" href="/">View Site</a>
+            <div class="header-right">
+                <span>Logged in as <strong>@username</strong></span>
+                <span class="user-badge">@role</span>
+                <form method="post" action="/admin/logout"><button class="logout-link" type="submit">Logout</button></form>
+            </div>
+        </header>
+
+        <main class="admin-content">
+            <h1>System Overview</h1>
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="error-message" role="alert">@Model.ErrorMessage</div>
+            }
+            <section class="dashboard-cards" aria-label="System overview">
+                <article class="card dashboard-stat-card">
+                    <h2>Dynamic Pages</h2>
+                    <p class="card-value">@DisplayCount(Model.TotalPages)</p>
+                    <p class="card-note">@DisplayCount(Model.PublishedPages) Published / @DisplayCount(Model.DraftPages) Drafts</p>
+                </article>
+                <article class="card">
+                    <h2>Static Pages</h2>
+                    <p class="card-value dashboard-static-count">@DisplayCount(Model.StaticPagesCount)</p>
+                    <p class="card-note">Razor pages in <code>/Pages</code></p>
+                </article>
+                <article class="card">
+                    <h2>Media Library</h2>
+                    <p class="card-value dashboard-media-count">@DisplayCount(Model.MediaCount)</p>
+                    <p class="card-note">Uploaded images</p>
+                </article>
+                <article class="card">
+                    <h2>User Accounts</h2>
+                    <p class="card-value dashboard-users-count">@DisplayCount(Model.TotalUsers)</p>
+                    <p class="card-note">Registered users &amp; admins</p>
+                </article>
+            </section>
+            <section class="card quick-management">
+                <h2>Quick Management</h2>
+                <div class="dashboard-actions">
+                    <a href="/admin/pages" class="btn btn-primary">Manage Pages</a>
+                    <a href="/admin/create" class="btn btn-secondary">+ New Page</a>
+                    <a href="/admin/media" class="btn btn-secondary">Upload Media</a>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
+
+@functions {
+    private static string DisplayCount(int? count) => count?.ToString() ?? "—";
+}

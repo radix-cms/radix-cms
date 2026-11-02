@@ -1,0 +1,56 @@
+@page "/locations/{slug}"
+@model dotnet_server.Pages.CustomPages.Locations.DetailsModel
+@{
+    Layout = null;
+    ViewData["Title"] = Model.Location?.Name ?? "Branch";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@ViewData["Title"] | Astley Gilbert</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/themes/imprime/css/styles.css" rel="stylesheet">
+    <style>
+        body { padding: 1.5rem; }
+        main { max-width: 32rem; margin: auto; }
+    </style>
+</head>
+<body>
+    <main class="card card-body">
+        <h1 class="h3">@Model.Location!.Name</h1>
+        <address class="mb-3">
+            @Model.Location.Street<br>
+            @Model.Location.City, @Model.Location.Province @Model.Location.PostalCode
+        </address>
+
+        <p class="branch-status"
+           data-timezone="@Model.Location.TimeZone"
+           data-opening-time="@Model.Location.OpeningTime"
+           data-closing-time="@Model.Location.ClosingTime"
+           data-open-days="@Model.Location.OpenDays"></p>
+
+        <dl class="row mb-0">
+            <dt class="col-4">Hours</dt>
+            <dd class="col-8">@Model.Location.OpenDaysLabel, @Model.Location.OpeningTime–@Model.Location.ClosingTime</dd>
+            @if (!string.IsNullOrWhiteSpace(Model.Location.Phone))
+            {
+                <dt class="col-4">Phone</dt>
+                <dd class="col-8"><a href="tel:@Model.PhoneLink(Model.Location.Phone)">@Model.Location.Phone</a></dd>
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.Location.TollFree))
+            {
+                <dt class="col-4">Toll-free</dt>
+                <dd class="col-8"><a href="tel:@Model.PhoneLink(Model.Location.TollFree)">@Model.Location.TollFree</a></dd>
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.Location.Email))
+            {
+                <dt class="col-4">Email</dt>
+                <dd class="col-8"><a href="mailto:@Model.Location.Email">@Model.Location.Email</a></dd>
+            }
+        </dl>
+    </main>
+    <script src="/js/branch-hours.js"></script>
+</body>
+</html>

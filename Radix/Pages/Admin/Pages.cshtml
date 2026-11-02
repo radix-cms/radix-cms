@@ -1,0 +1,139 @@
+@page "/admin/pages"
+@model dotnet_server.Pages.Admin.PagesModel
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Pages Management | Radix CMS";
+    var username = User.Identity?.Name ?? "Admin";
+    var role = User.FindFirstValue(ClaimTypes.Role) ?? "Editor";
+    var showTrash = Model.ShowTrash;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/css/admin.css" />
+</head>
+<body class="admin-page">
+    <aside class="admin-sidebar">
+        <div class="brand">Radix<span>CMS</span></div>
+        <nav aria-label="Admin navigation">
+            <ul class="admin-nav">
+                <li><a href="/admin"><span class="icon" aria-hidden="true">▦</span>Dashboard</a></li>
+                <li><span><span class="icon" aria-hidden="true">↻</span>Updates</span></li>
+                <li class="active"><a href="/admin/pages"><span class="icon" aria-hidden="true">▤</span>Pages</a></li>
+                <li><a href="/admin/themes"><span class="icon" aria-hidden="true">◈</span>Themes</a></li>
+                <li><a href="/admin/media"><span class="icon" aria-hidden="true">▧</span>Media Library</a></li>
+                <li><a href="/admin/users"><span class="icon" aria-hidden="true">♙</span>Users &amp; Roles</a></li>
+                <li><a href="/admin/settings"><span class="icon" aria-hidden="true">⚙</span>Settings</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <div class="admin-wrapper">
+        <header class="admin-header">
+            <a class="view-site" href="/">View Site</a>
+            <div class="header-right">
+                <span>Logged in as <strong>@username</strong></span>
+                <span class="user-badge">@role</span>
+                <form method="post" action="/admin/logout"><button class="logout-link" type="submit">Logout</button></form>
+            </div>
+        </header>
+
+        <main class="admin-content">
+            <section class="card users-card">
+                <div class="users-heading">
+                    <div>
+                        <h1>@(showTrash ? "Trash Bin" : "Pages Management")</h1>
+                        <nav class="page-filter" aria-label="Page status filter">
+                            <a class="@(!showTrash ? "selected" : "")" href="/admin/pages">All Active Pages</a>
+                            <a class="@(showTrash ? "selected trash-filter" : "")" href="/admin/pages?view=trash">Trash</a>
+                        </nav>
+                    </div>
+                    @if (!showTrash)
+                    {
+                        <a href="/admin/create" class="btn btn-primary">Create New Page</a>
+                    }
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                {
+                    <div class="error-message" role="alert">@Model.ErrorMessage</div>
+                }
+                @if (TempData["StatusMessage"] is string statusMessage)
+                {
+                    <div class="success-message" role="status">@statusMessage</div>
+                }
+
+                <div class="table-scroll">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Status</th>
+                                <th>Min Access</th>
+                                <th>Publish Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Pages.Count > 0)
+                            {
+                                @foreach (var dynamicPage in Model.Pages)
+                                {
+                                    <tr>
+                                        <td>
+                                            <strong>@dynamicPage.Title</strong><br />
+                                            @if (Model.StaticPageSlugs.Contains(dynamicPage.Slug))
+                                            {
+                                                <span class="static-override-badge" title="This dynamic page is overridden by a static Razor page.">⚡ Static Override</span><br />
+                                            }
+                                            <small class="page-slug">/@dynamicPage.Slug</small>
+                                        </td>
+                                        <td><span class="page-status status-@dynamicPage.Status.ToLowerInvariant().Replace(' ', '-')">@dynamicPage.Status</span></td>
+                                        <td><code>@dynamicPage.MinimumRole</code></td>
+                                        <td>@dynamicPage.PublishAt.ToLocalTime().ToString("g")</td>
+                                        <td class="user-actions">
+                                            @if (!showTrash)
+                                            {
+                                                <a href="/admin/edit/@dynamicPage.Id" class="btn btn-primary">Edit</a>
+                                                <form method="post"
+                                                      asp-page-handler="Trash"
+                                                      onsubmit="return confirm('Move this page to trash?');">
+                                                    <input type="hidden" name="pageId" value="@dynamicPage.Id" />
+                                                    <button type="submit" class="btn btn-danger">Trash</button>
+                                                </form>
+                                            }
+                                            else
+                                            {
+                                                <form method="post" asp-page-handler="Restore">
+                                                    <input type="hidden" name="pageId" value="@dynamicPage.Id" />
+                                                    <button type="submit" class="btn btn-secondary">Restore</button>
+                                                </form>
+                                                @if (User.IsInRole("Administrator"))
+                                                {
+                                                    <form method="post"
+                                                          asp-page-handler="DeletePermanently"
+                                                          onsubmit="return confirm('Permanently delete this page? This cannot be undone.');">
+                                                        <input type="hidden" name="pageId" value="@dynamicPage.Id" />
+                                                        <button type="submit" class="btn btn-danger">Delete Permanently</button>
+                                                    </form>
+                                                }
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr><td colspan="5" class="empty-message">@(showTrash ? "Trash is empty." : "No pages found.")</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

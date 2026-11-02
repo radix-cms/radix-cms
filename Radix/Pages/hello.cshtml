@@ -1,0 +1,18 @@
+@page "/hello"
+@{
+    Layout = "~/Themes/default/_Layout.cshtml";
+    ViewData["Title"] = "Static Hello";
+}
+
+<main class="page-shell">
+    <div class="container">
+        <article class="content-panel dynamic-content">
+            <h1>Static Hello</h1>
+            <p>This page is rendered from the <code>dotnet-server/Pages/</code> directory.</p>
+
+            @* EJS helper call is not available in the .NET server yet.
+<%- RadButton('https://workforcenow.adp.com', 'Employee Login', 'btn sidebar-btn-custom', true) %>
+*@
+        </article>
+    </div>
+</main>

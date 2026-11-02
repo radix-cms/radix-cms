@@ -1,0 +1,32 @@
+@page "/"
+@model dotnet_server.Pages.HomeModel
+@{
+    ViewData["Title"] = Model.CurrentPage?.Title + " - Radix";
+}
+
+@if (Model.CurrentPage is not null)
+{
+    Layout = Model.LayoutPath;
+    <main class="page-shell">
+        <div class="container">
+            <section class="hero">
+                <div class="hero-copy">
+                    <p class="eyebrow">Radix</p>
+                    <h1>@Model.CurrentPage.Title</h1>
+                </div>
+            </section>
+            <article class="content-panel dynamic-content">@Html.Raw(Model.CurrentPage.Content)</article>
+        </div>
+    </main>
+}
+else
+{
+    <main class="page-shell">
+        <div class="container">
+            <article class="content-panel">
+                <h1>Page unavailable</h1>
+                <p>@Model.ErrorMessage</p>
+            </article>
+        </div>
+    </main>
+}

@@ -1,0 +1,133 @@
+@page "/admin/media"
+@model dotnet_server.Pages.Admin.MediaModel
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Media Library | Radix CMS";
+    var username = User.Identity?.Name ?? "Admin";
+    var role = User.FindFirstValue(ClaimTypes.Role) ?? "Editor";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/css/admin.css" />
+    <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" />
+</head>
+<body class="admin-page">
+    <aside class="admin-sidebar">
+        <div class="brand">Radix<span>CMS</span></div>
+        <nav aria-label="Admin navigation">
+            <ul class="admin-nav">
+                <li><a href="/admin"><span class="icon" aria-hidden="true">▦</span>Dashboard</a></li>
+                <li><span><span class="icon" aria-hidden="true">↻</span>Updates</span></li>
+                <li><a href="/admin/pages"><span class="icon" aria-hidden="true">▤</span>Pages</a></li>
+                <li><a href="/admin/themes"><span class="icon" aria-hidden="true">◈</span>Themes</a></li>
+                <li class="active"><a href="/admin/media"><span class="icon" aria-hidden="true">▧</span>Media Library</a></li>
+                <li><a href="/admin/users"><span class="icon" aria-hidden="true">♙</span>Users &amp; Roles</a></li>
+                <li><a href="/admin/settings"><span class="icon" aria-hidden="true">⚙</span>Settings</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <div class="admin-wrapper">
+        <header class="admin-header">
+            <a class="view-site" href="/">View Site</a>
+            <div class="header-right">
+                <span>Logged in as <strong>@username</strong></span>
+                <span class="user-badge">@role</span>
+                <form method="post" action="/admin/logout"><button class="logout-link" type="submit">Logout</button></form>
+            </div>
+        </header>
+
+        <main class="admin-content">
+            <h1>Media Library</h1>
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="error-message" role="alert">@Model.ErrorMessage</div>
+            }
+            @if (TempData["StatusMessage"] is string statusMessage)
+            {
+                <div class="success-message" role="status">@statusMessage</div>
+            }
+
+            <section class="card media-upload-card">
+                <h2>Upload Images</h2>
+                <p>Drag and drop images here or click to select. Maximum file size: 10 MB.</p>
+                <form action="/admin/media?handler=Upload" class="dropzone media-dropzone" id="mediaDropzone" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <div class="dz-message" data-dz-message>
+                        <span aria-hidden="true">📁</span>
+                        <p>Drop images here or click to upload</p>
+                    </div>
+                </form>
+            </section>
+
+            <section class="card">
+                <h2>Images (@Model.Images.Count)</h2>
+                @if (Model.Images.Count > 0)
+                {
+                    <div class="media-grid">
+                        @foreach (var image in Model.Images)
+                        {
+                            <article class="media-item">
+                                <a class="media-preview" href="@image.Url" target="_blank" rel="noopener">
+                                    <img src="@image.Url" alt="@image.Name" loading="lazy" />
+                                </a>
+                                <div class="media-details">
+                                    <strong title="@image.Name">@image.Name</strong>
+                                    <span>@image.Size</span>
+                                    <div class="media-actions">
+                                        <button type="button" class="btn btn-secondary" data-copy-url="@image.Url">Copy URL</button>
+                                        @if (User.IsInRole("Administrator"))
+                                        {
+                                            <form method="post" asp-page-handler="Delete" onsubmit="return confirm('Delete this image?');">
+                                                <input type="hidden" name="fileName" value="@image.Name" />
+                                                <button type="submit" class="btn btn-danger">Delete</button>
+                                            </form>
+                                        }
+                                    </div>
+                                </div>
+                            </article>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="empty-message">No images uploaded yet.</p>
+                }
+            </section>
+        </main>
+    </div>
+
+    <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
+    <script>
+        Dropzone.autoDiscover = false;
+        const token = document.querySelector('#mediaDropzone input[name="__RequestVerificationToken"]').value;
+        new Dropzone('#mediaDropzone', {
+            paramName: 'file',
+            maxFilesize: 10,
+            acceptedFiles: 'image/jpeg,image/png,image/gif,image/webp,.jpg,.jpeg,.png,.gif,.webp',
+            headers: { RequestVerificationToken: token },
+            init: function () {
+                this.on('queuecomplete', function () { window.location.reload(); });
+            }
+        });
+
+        document.querySelectorAll('[data-copy-url]').forEach((button) => {
+            button.addEventListener('click', async () => {
+                const url = new URL(button.dataset.copyUrl, window.location.origin).href;
+                try {
+                    await navigator.clipboard.writeText(url);
+                    button.textContent = 'Copied';
+                    window.setTimeout(() => { button.textContent = 'Copy URL'; }, 1500);
+                } catch (error) {
+                    console.error('Unable to copy image URL', error);
+                    window.prompt('Copy image URL:', url);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

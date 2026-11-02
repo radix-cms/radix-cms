@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+    <header class="site-header">
+        <div class="container topbar">
+            <div class="brand" aria-label="Brand logo">
+                <div class="brand-logo">R</div>
+                <div class="brand-text">Radix</div>
+            </div>
+
+            <nav class="main-nav" aria-label="Main navigation">
+                <a asp-page="/Index">Home</a>
+                <a asp-page="/About">About</a>
+            </nav>
+        </div>
+    </header>
+
+    @RenderBody()
+
+    <footer class="site-footer">
+        <div class="container footer-inner">
+            <p>Built by <a href="https://www.ultraspark.net" target="_blank" rel="noopener noreferrer">ULTRASPARK</a></p>
+            <p>Version 0.11.0</p>
+        </div>
+    </footer>
+</body>
+</html>

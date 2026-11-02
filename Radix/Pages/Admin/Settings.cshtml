@@ -1,0 +1,126 @@
+@page "/admin/settings"
+@model dotnet_server.Pages.Admin.SettingsModel
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Settings | Radix CMS";
+    var username = User.Identity?.Name ?? "Admin";
+    var role = User.FindFirstValue(ClaimTypes.Role) ?? "Administrator";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/css/admin.css" />
+</head>
+<body class="admin-page">
+    <aside class="admin-sidebar">
+        <div class="brand">Radix<span>CMS</span></div>
+        <nav aria-label="Admin navigation">
+            <ul class="admin-nav">
+                <li><a href="/admin"><span class="icon" aria-hidden="true">▦</span>Dashboard</a></li>
+                <li><span><span class="icon" aria-hidden="true">↻</span>Updates</span></li>
+                <li><a href="/admin/pages"><span class="icon" aria-hidden="true">▤</span>Pages</a></li>
+                <li><a href="/admin/themes"><span class="icon" aria-hidden="true">◈</span>Themes</a></li>
+                <li><a href="/admin/media"><span class="icon" aria-hidden="true">▧</span>Media Library</a></li>
+                <li><a href="/admin/users"><span class="icon" aria-hidden="true">♙</span>Users &amp; Roles</a></li>
+                <li class="active"><a href="/admin/settings"><span class="icon" aria-hidden="true">⚙</span>Settings</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <div class="admin-wrapper">
+        <header class="admin-header">
+            <a class="view-site" href="/">View Site</a>
+            <div class="header-right">
+                <span>Logged in as <strong>@username</strong></span>
+                <span class="user-badge">@role</span>
+                <form method="post" action="/admin/logout"><button class="logout-link" type="submit">Logout</button></form>
+            </div>
+        </header>
+
+        <main class="admin-content settings-content">
+            <h1>System Settings</h1>
+            @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+            {
+                <div class="success-message" role="status">@Model.SuccessMessage</div>
+            }
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="error-message" role="alert">@Model.ErrorMessage</div>
+            }
+
+            <form method="post" asp-page-handler="Save">
+                <section class="card settings-card">
+                    <h2>Site Branding</h2>
+                    <div class="settings-field">
+                        <label asp-for="SiteLogo">Website Logo Path/URL</label>
+                        <div class="settings-logo-input">
+                            <input asp-for="SiteLogo" placeholder="/uploads/logo.png" />
+                            <a href="/admin/media" target="_blank" rel="noopener" class="btn btn-secondary">Browse Media</a>
+                        </div>
+                        <small>Enter a path from the Media Library or an external image URL.</small>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(Model.SiteLogo))
+                    {
+                        <div class="settings-logo-preview">
+                            <small>Logo Preview:</small>
+                            <img src="@Model.SiteLogo" alt="Site logo preview" />
+                        </div>
+                    }
+                </section>
+
+                <section class="card settings-card">
+                    <h2>Mail Server Configuration (SMTP)</h2>
+                    <div class="settings-grid settings-smtp-primary">
+                        <div class="settings-field">
+                            <label asp-for="MailHost">SMTP Host</label>
+                            <input asp-for="MailHost" required />
+                        </div>
+                        <div class="settings-field">
+                            <label asp-for="MailPort">Port</label>
+                            <input asp-for="MailPort" type="number" min="1" max="65535" required />
+                        </div>
+                        <div class="settings-field">
+                            <label asp-for="MailSecure">Encryption</label>
+                            <select asp-for="MailSecure">
+                                <option value="0">None / STARTTLS</option>
+                                <option value="1">SSL / TLS</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="settings-grid settings-smtp-auth">
+                        <div class="settings-field">
+                            <label asp-for="MailUser">SMTP Username</label>
+                            <input asp-for="MailUser" autocomplete="username" />
+                        </div>
+                        <div class="settings-field">
+                            <label asp-for="MailPassword">SMTP Password</label>
+                            <input asp-for="MailPassword" type="password" autocomplete="new-password" />
+                            <small>@(Model.HasSavedMailPassword ? "Leave blank to keep the saved password." : "Optional; used when SMTP authentication is enabled.")</small>
+                        </div>
+                    </div>
+                    <div class="settings-field settings-from-field">
+                        <label asp-for="MailFrom">Sender Email ("From" Address)</label>
+                        <input asp-for="MailFrom" type="email" />
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save Settings</button>
+                </section>
+            </form>
+
+            <section class="card settings-card">
+                <h2>Send Test Email</h2>
+                <p>Verify your SMTP configuration by sending a test message.</p>
+                <form method="post" asp-page-handler="TestEmail" class="settings-test-email">
+                    <div class="settings-field">
+                        <label asp-for="RecipientEmail">Recipient Email</label>
+                        <input asp-for="RecipientEmail" type="email" required placeholder="recipient@example.com" />
+                    </div>
+                    <button type="submit" class="btn btn-test-email">Send Test Email</button>
+                </form>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

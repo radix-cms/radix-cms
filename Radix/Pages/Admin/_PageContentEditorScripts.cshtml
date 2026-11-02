@@ -1,0 +1,22 @@
+@inject IConfiguration Configuration
+@{
+    var tinyMceApi = Configuration["Site:TinyMCEApi"];
+}
+@if (!string.IsNullOrWhiteSpace(tinyMceApi))
+{
+    <script src="https://cdn.tiny.cloud/1/@tinyMceApi/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+        tinymce.init({
+            selector: '#PageContent',
+            height: 500,
+            menubar: true,
+            plugins: 'code image link lists table',
+            toolbar: 'undo redo | blocks | bold italic underline | bullist numlist | link image table | code',
+            convert_urls: false
+        });
+    </script>
+}
+else
+{
+    <p class="error-message" role="alert">The rich text editor is unavailable because TinyMCE is not configured.</p>
+}

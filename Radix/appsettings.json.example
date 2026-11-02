@@ -1,0 +1,42 @@
+{
+  "App": {
+    "Name": "Radix",
+    "Version": "1.0.0"
+  },
+  "Site": {
+    "Status": "live",
+    "Url": "localhost",
+    "Port": 5000,
+    "Theme": "default",
+    "SessionSecret": "a_very_long_random_unpredictable_string_here",
+    "TinyMCEApi": ""
+  },
+  "Urls": {
+    "url_UltraSpark": "https://www.ultraspark.net"
+  },
+  "Documents": {
+    "doc_ReadMe": "/images/Documents/ReadMe.pdf"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "Database": {
+    "Type": "mysql",
+    "Host": "localhost",
+    "Port": 3306,
+    "Name": "",
+    "User": "",
+    "Password": ""
+  },
+  "Mail": {
+    "Host": "",
+    "Port": 25,
+    "Secure": false,
+    "User": "",
+    "Password": ""
+  }
+}

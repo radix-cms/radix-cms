@@ -1,0 +1,9 @@
+@page "/gallery"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Registered,Editor,Manager,Administrator")]
+@{
+    Layout = "~/Themes/landing/_Layout.cshtml";
+    ViewData["Title"] = "Static Portfolio Gallery";
+}
+
+<h2>Static Portfolio Gallery</h2>
+<p>This content is injected into the selected theme layout.</p>

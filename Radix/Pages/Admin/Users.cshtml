@@ -1,0 +1,167 @@
+@page "/admin/users"
+@model dotnet_server.Pages.Admin.UsersModel
+@using System.Security.Claims
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Policy = "Administrator")]
+@{
+    ViewData["Title"] = "Users & Roles | Radix CMS";
+    var username = User.Identity?.Name ?? "Admin";
+    var role = User.FindFirstValue(ClaimTypes.Role) ?? "Administrator";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/css/admin.css" />
+</head>
+<body class="admin-page">
+    <aside class="admin-sidebar">
+        <div class="brand">Radix<span>CMS</span></div>
+        <nav aria-label="Admin navigation">
+            <ul class="admin-nav">
+                <li><a href="/admin"><span class="icon" aria-hidden="true">▦</span>Dashboard</a></li>
+                <li><span><span class="icon" aria-hidden="true">↻</span>Updates</span></li>
+                <li><a href="/admin/pages"><span class="icon" aria-hidden="true">▤</span>Pages</a></li>
+                <li><a href="/admin/themes"><span class="icon" aria-hidden="true">◈</span>Themes</a></li>
+                <li><a href="/admin/media"><span class="icon" aria-hidden="true">▧</span>Media Library</a></li>
+                <li class="active"><a href="/admin/users"><span class="icon" aria-hidden="true">♙</span>Users &amp; Roles</a></li>
+                <li><a href="/admin/settings"><span class="icon" aria-hidden="true">⚙</span>Settings</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <div class="admin-wrapper">
+        <header class="admin-header">
+            <a class="view-site" href="/">View Site</a>
+            <div class="header-right">
+                <span>Logged in as <strong>@username</strong></span>
+                <span class="user-badge">@role</span>
+                <form method="post" action="/admin/logout"><button class="logout-link" type="submit">Logout</button></form>
+            </div>
+        </header>
+
+        <main class="admin-content">
+            <section class="card users-card">
+                <div class="users-heading">
+                    <div>
+                        <h1>User Accounts &amp; RBAC</h1>
+                        <p>View accounts and assign access control roles.</p>
+                    </div>
+                    <a class="btn btn-secondary" href="/admin">Back to Dashboard</a>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                {
+                    <div class="error-message" role="alert">@Model.ErrorMessage</div>
+                }
+                @if (TempData["StatusMessage"] is string statusMessage)
+                {
+                    <div class="success-message" role="status">@statusMessage</div>
+                }
+
+                <section class="create-user-section" aria-labelledby="create-user-heading">
+                    <h2 id="create-user-heading">Create New User</h2>
+                    <form method="post" asp-page-handler="Create" class="create-user-form">
+                        <div class="user-form-field">
+                            <label for="new-username">Username</label>
+                            <input id="new-username" name="username" type="text" required maxlength="100" autocomplete="off" />
+                        </div>
+                        <div class="user-form-field">
+                            <label for="new-full-name">Full Name (Optional)</label>
+                            <input id="new-full-name" name="fullName" type="text" maxlength="255" />
+                        </div>
+                        <div class="user-form-field">
+                            <label for="new-email">Email (Optional)</label>
+                            <input id="new-email" name="email" type="email" maxlength="255" />
+                        </div>
+                        <div class="user-form-field">
+                            <label for="new-password">Password</label>
+                            <input id="new-password" name="password" type="password" required autocomplete="new-password" />
+                        </div>
+                        <div class="user-form-field role-field">
+                            <label for="new-role">Role</label>
+                            <select id="new-role" name="role" required>
+                                <option value="Registered" selected>Registered</option>
+                                @foreach (var availableRole in UserRoles.All.Where(roleName => roleName != "Registered"))
+                                {
+                                    <option value="@availableRole">@availableRole</option>
+                                }
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add User</button>
+                    </form>
+                </section>
+
+                @if (Model.Users.Count > 0)
+                {
+                    <div class="table-scroll">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Full Name</th>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Current Role</th>
+                                    <th>Registered</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var user in Model.Users)
+                                {
+                                    <tr>
+                                        <td>@(string.IsNullOrWhiteSpace(user.FullName) ? "N/A" : user.FullName)</td>
+                                        <td><strong>@user.Username</strong></td>
+                                        <td>@(string.IsNullOrWhiteSpace(user.Email) ? "N/A" : user.Email)</td>
+                                        <td>
+                                            <form method="post" asp-page-handler="Role" class="role-form">
+                                                <input type="hidden" name="UserId" value="@user.Id" />
+                                                <select name="Role" aria-label="Role for @user.Username">
+                                                    @foreach (var availableRole in UserRoles.All)
+                                                    {
+                                                        if (availableRole == user.Role)
+                                                        {
+                                                            <option value="@availableRole" selected>@availableRole</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@availableRole">@availableRole</option>
+                                                        }
+                                                    }
+                                                </select>
+                                                <button type="submit" class="btn btn-primary">Save</button>
+                                            </form>
+                                        </td>
+                                        <td>@user.CreatedAt.ToLocalTime().ToString("d")</td>
+                                        <td class="user-actions">
+                                            <a class="btn btn-secondary" href="/admin/users/edit/@user.Id">Edit</a>
+                                            @if (User.FindFirstValue(ClaimTypes.NameIdentifier) == user.Id.ToString())
+                                            {
+                                                <span class="self-account">Active Self</span>
+                                            }
+                                            else
+                                            {
+                                                <form method="post"
+                                                      asp-page-handler="Delete"
+                                                      onsubmit="return confirm('Are you sure you want to delete user @user.Username?');">
+                                                    <input type="hidden" name="userId" value="@user.Id" />
+                                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                                </form>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else if (string.IsNullOrEmpty(Model.ErrorMessage))
+                {
+                    <p class="empty-message">No users found in the shared database.</p>
+                }
+            </section>
+        </main>
+    </div>
+</body>
+</html>

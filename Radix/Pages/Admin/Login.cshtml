@@ -1,0 +1,36 @@
+@page "/admin/login"
+@model dotnet_server.Pages.Admin.LoginModel
+@{
+    ViewData["Title"] = "Radix Admin Login";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/css/admin.css" />
+</head>
+<body class="login-page">
+    <main class="login-card">
+        <div class="login-brand">Radix<span>CMS</span></div>
+
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="error-message" role="alert">@Model.ErrorMessage</div>
+        }
+        <form method="post">
+            <input type="hidden" asp-for="ReturnUrl" />
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input asp-for="Username" id="username" required autocomplete="username" />
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input asp-for="Password" id="password" type="password" required autocomplete="current-password" />
+            </div>
+            <button type="submit" class="btn-login">Login</button>
+        </form>
+    </main>
+</body>
+</html>
